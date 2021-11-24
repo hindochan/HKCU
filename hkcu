@@ -1,0 +1,114 @@
+// ConsoleApplication2.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include <string>
+#include <iostream>
+#include <Windows.h>
+using namespace std;
+
+int OpenRegistry(HKEY *hKey) {
+	LPSTR subKey = "Software\\Microsoft\\Windows\\Windows Error Reporting\\Consent";
+
+	if (RegOpenKeyExA(HKEY_CURRENT_USER, subKey, NULL, KEY_READ, hKey) == ERROR_SUCCESS)
+	{
+		cout << "Opened successfully" << endl;;
+		return (1);
+	}
+	else {
+		cout << "Failed to open reg key: " << GetLastError() << "\n";
+		return (0);
+	}
+
+}
+
+
+int ReadRegistry1(HKEY key, string *data)
+{
+	LPSTR SubKey = "Software\\Microsoft\\Windows\\Windows Error Reporting\\Consent";
+	std::string str_data;
+	DWORD size = 0;
+	DWORD Type = 0;
+	LSTATUS status;
+	// READING
+	
+	// Iterate through the Hive to access all keys and values as needed
+	// Access the data for required keys using the RegGetValue function,
+	
+	status = RegGetValueA(key, SubKey, NULL, RRF_NOEXPAND | RRF_RT_REG_EXPAND_SZ, NULL, NULL, (LPDWORD) &size);
+	cout << "Status " << status << " Size " << size << endl;
+	if ((status == ERROR_SUCCESS) && (size > 1))
+	{
+		data->resize(size - 1);
+		status = RegGetValueA(key, SubKey, NULL, RRF_NOEXPAND | RRF_RT_REG_EXPAND_SZ, NULL, data, &size);
+		//status = RegGetValueA(key, SubKey, NULL, RRF_NOEXPAND | RRF_RT_REG_EXPAND_SZ, NULL, &str_data[0], &size);
+		std::cout << "Successfully read key value: " << str_data << endl;
+	}
+	else
+	{
+		std::cout << "Unable to retrieve value. Error: " << status << endl;
+	}
+	
+	return 1;
+}
+
+int ReadRegistry2(HKEY Key)
+{
+	LPSTR reg_path = "Software\\Microsoft\\Windows\\Windows Error Reporting\\Consent";
+	
+	LSTATUS status;
+	// READING
+	std::string str_data[2048];
+	BYTE data[2048];
+	DWORD size = sizeof(data);
+	DWORD Type = 0;
+	
+	cout << size << endl;
+	data[0] = 'A'; data[1] = 'B'; data[3] = 0;// for debugging
+	status = RegQueryValueExA(Key, NULL, NULL, &Type, (LPBYTE)&data, (LPDWORD)&size);
+	cout << hex << data << endl;
+	cout << "QueryValueEx Status " << status << endl;
+	cout << hex << Type << endl;
+	cout << "Size " << size << endl;
+
+	return FALSE;
+}
+
+int ProcessData(string str_data)
+{
+	int rv = 1;
+
+	// Process the data
+	return (rv);
+}
+
+int main()
+{
+	int rv = 1;
+	HKEY hKey;
+	std::string str_data;
+	string UserName;
+	string Password;
+
+	cout << "Enter the username: " << endl;
+	cin >> UserName;
+
+	cout << "Enter the password: " << endl;
+	cin >> Password;
+
+	if (OpenRegistry(&hKey))
+	{
+		if (rv = ReadRegistry1(hKey, &str_data))
+		{
+			// Process data held in str_data
+			rv = ProcessData(str_data);
+		}
+		else
+		{
+			cout << "OpenFailed" << endl;
+		}
+	}
+	//rv = ReadRegistry2();
+
+	return (rv);
+}
